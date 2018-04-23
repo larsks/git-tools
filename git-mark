@@ -13,9 +13,17 @@ git_unmark() {
 		'sed "1 s/^\['"$OPT_MARK"'] //"' "${@:-HEAD^..}"
 }
 
+usage () {
+	echo "${0##*/}: usage: ${0##*/} [-m mark] refspec"
+}
+
 while getopts 'm:' ch; do
 	case $ch in
 	(m)	OPT_MARK=$OPTARG
+		;;
+
+	(\?)	usage >&2
+		exit 2
 		;;
 	esac
 done
