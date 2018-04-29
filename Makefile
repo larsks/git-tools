@@ -6,11 +6,12 @@ SCRIPTS = \
 	git-fixup \
 	git-mark \
 	git-resume \
-	git-update-review
+	git-update-review \
+	git-since
 
 INSTALL = install
 
-all:
+all: $(SCRIPTS)
 
 install: all
 	$(INSTALL) -m 755 -d $(bindir)
