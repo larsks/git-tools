@@ -1,0 +1,3 @@
+#!/bin/sh
+
+git review -d $(git show | awk -vIGNORECASE=1 '/change-id:/ {print $2}')

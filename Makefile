@@ -5,7 +5,8 @@ SCRIPTS = \
 	git-edit \
 	git-fixup \
 	git-mark \
-	git-resume
+	git-resume \
+	git-update-review
 
 INSTALL = install
 
