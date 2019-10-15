@@ -1,4 +1,4 @@
-prefix = /usr/local
+prefix = $(HOME)
 bindir = $(prefix)/bin
 
 SCRIPTS = \
