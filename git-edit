@@ -1,17 +1,15 @@
 #!/bin/bash
 
+REBASE_ACTION=edit
+
 while getopts m ch; do
 	case $ch in
-		(m) MSG_ONLY=1;;
+		(m) REBASE_ACTION=reword;;
 	esac
 done
 shift $(( $OPTIND - 1 ))
 
 cid=$(git rev-parse --short "$1")
 
-export GIT_SEQUENCE_EDITOR="sed -i '/^pick $cid/ s/pick/edit/'"
-if git rebase -i ${cid}^; then
-	if [ "$MSG_ONLY" = 1 ]; then
-		git commit --amend && git rebase --continue
-	fi
-fi
+SED="sed -i '/^pick $cid/ s/pick/$REBASE_ACTION/'"
+git -c sequence.editor="$SED" rebase -i ${cid}^
