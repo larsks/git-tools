@@ -1,16 +1,35 @@
 #!/bin/bash
 
-OPT_MARK=$(git config --get mark.default || echo 'WIP')
+OPT_MARK=$(git config --get mark.default 2>/dev/null || echo 'WIP')
+
+git_filter_message() {
+	local ref
+	local sed_program
+
+	sed_program=$1
+	shift
+
+	ref=$(git rev-parse "${1:-HEAD}") || exit 1
+
+	if git cat-file -p "$ref" | sed '/^$/,$d' | grep -q '^parent'; then
+		rebase_target="${ref}^"
+	else
+		rebase_target="--root"
+	fi
+	
+	GIT_EDITOR="sed -i '$sed_program'" \
+		GIT_SEQUENCE_EDITOR="sed -i 1s/pick/reword/" \
+		git rebase -i "${rebase_target}"
+}
 
 git_mark() {
-	exec git filter-branch -f --msg-filter \
-		'sed "1 { /^\['"$OPT_MARK"'] /! s/^/['"$OPT_MARK"'] / }"' \
-		"${@:-HEAD^..}"
+	sed_program="$(printf "1 { /^\[%s]/! s/^/[%s] /}" "$OPT_MARK" "$OPT_MARK")"
+	git_filter_message "$sed_program" "$@"
 }
 
 git_unmark() {
-	exec git filter-branch -f --msg-filter \
-		'sed "1 s/^\['"$OPT_MARK"'] //"' "${@:-HEAD^..}"
+	sed_program="$(printf "1 s/^\[%s] //" "$OPT_MARK")"
+	git_filter_message "$sed_program" "$@"
 }
 
 usage () {
@@ -19,17 +38,15 @@ usage () {
 
 while getopts 'm:' ch; do
 	case $ch in
-	(m)	OPT_MARK=$OPTARG
+	m)	OPT_MARK=$OPTARG
 		;;
 
-	(\?)	usage >&2
+	*)	usage >&2
 		exit 2
 		;;
 	esac
 done
-shift $(( $OPTIND - 1 ))
-
-cd $(git rev-parse --show-toplevel)
+shift $(( OPTIND - 1 ))
 
 case $0 in
 	(*git-mark)	git_mark "$@";;
