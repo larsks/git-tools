@@ -1,33 +1,35 @@
 #!/bin/bash
 
+usage() {
+	echo "${0##*/}: usage: ${0##*/} [-c]"
+}
+
 use_commit=0
 
-while [[ $# -ge 1 ]]; do
-	case $1 in
-	(--commit|-c)
-		use_commit=1
-		shift
+while getopts c ch; do
+	case $ch in
+	c)	use_commit=1
 		;;
 
-	(--)	shift
-		break
-		;;
-
-	(-*)	echo "error: unknown option: $1" >&2
+	*)	usage >&2
 		exit 2
-		;;
-
-	(*)	break
 		;;
 	esac
 done
 
-ref=${1:-HEAD}
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+files_to_edit=()
 
 if [[ $use_commit -eq 1 ]]; then
-	${VISUAL:-vim} -p $(git diff-tree --no-commit-id --name-only -r $ref)
-elif ! git diff --quiet $ref; then
-	${VISUAL:-vim} -p $(git diff --name-only $ref)
+	mapfile -d '' -t files_to_edit < <(git diff --name-only -z "HEAD^")
 else
-	echo "No work to resume."
+	mapfile -d '' -t files_to_edit < <(git diff --name-only -z HEAD)
 fi
+
+if ! (( ${#files_to_edit[@]} )); then
+	echo "No work to resume."
+	exit
+fi
+
+${VISUAL:-vim} -p "${files_to_edit[@]}"
