@@ -49,7 +49,7 @@ func main() {
 		to = "HEAD"
 	}
 
-	for cid, err := range git.RevList(from, to) {
+	for cid, err := range git.RevList(from, to, true) {
 		if err != nil {
 			log.Fatalf("failed to get revision list: %v", err)
 		}

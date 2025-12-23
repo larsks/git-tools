@@ -65,6 +65,7 @@ func (g *GitCommand) GetTrailers(commitSHA string) (map[string]string, error) {
 	return trailers, nil
 }
 
+// Run a git command without stdout and stderr going to the console.
 func (g *GitCommand) Run(args ...string) error {
 	cmd := g.Command(args...)
 	cmd.Stdout = os.Stdout
@@ -73,16 +74,22 @@ func (g *GitCommand) Run(args ...string) error {
 	return err
 }
 
+// Run a git command and return the output.
 func (g *GitCommand) Output(args ...string) ([]byte, error) {
 	cmd := g.Command(args...)
 	stdout, err := cmd.Output()
 	return stdout, err
 }
 
-func (g *GitCommand) RevList(from, to string) iter.Seq2[string, error] {
+// Iterate over a list of revisions between <to> and <from>
+func (g *GitCommand) RevList(from, to string, reverse bool) iter.Seq2[string, error] {
 	return func(yield func(string, error) bool) {
-		// Get the commit message body using git log
-		cmd := g.Command("rev-list", "--reverse", fmt.Sprintf("%s..%s", from, to))
+		cmdArgs := []string{"rev-list"}
+		if reverse {
+			cmdArgs = append(cmdArgs, "--reverse")
+		}
+		cmdArgs = append(cmdArgs, fmt.Sprintf("%s..%s", from, to))
+		cmd := g.Command(cmdArgs...)
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
 			if !yield("", err) {
