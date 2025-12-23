@@ -1,6 +1,9 @@
-# git-ptt
+# git-tools
 
-```
-git-ptt [main[..HEAD]]
-```
+## git-ptt
 
+Push a series of commits to different remote branches based on the `x-branch` trailer.
+
+## git-resume
+
+A shortcut to continue editing files.
