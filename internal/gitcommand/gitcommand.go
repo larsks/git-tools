@@ -73,6 +73,12 @@ func (g *GitCommand) Run(args ...string) error {
 	return err
 }
 
+func (g *GitCommand) Output(args ...string) ([]byte, error) {
+	cmd := g.Command(args...)
+	stdout, err := cmd.Output()
+	return stdout, err
+}
+
 func (g *GitCommand) RevList(from, to string) iter.Seq2[string, error] {
 	return func(yield func(string, error) bool) {
 		// Get the commit message body using git log
