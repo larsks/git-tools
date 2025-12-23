@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/larsks/gobot/tools"
@@ -32,15 +33,17 @@ func init() {
 
 func main() {
 	flag.Parse()
-
-	if flag.NArg() < 1 {
-		log.Fatalf("Missing required <from> argument")
-	}
-
 	git = gitcommand.NewGit()
 
 	var from, to string
-	from = flag.Arg(0)
+	if flag.NArg() < 1 {
+		from = os.Getenv("GIT_PTT_FROM")
+		if from == "" {
+			log.Fatalf("Missing required <from> argument")
+		}
+	} else {
+		from = flag.Arg(0)
+	}
 
 	if strings.Contains(from, "..") {
 		parts := strings.SplitN(from, "..", 2)
